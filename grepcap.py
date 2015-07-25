@@ -28,16 +28,15 @@ def videos_from_path(inputpath):
 
     else:
         """Check that file requested is a usable format"""
-        ext = os.path.splitext(inputpath)[1:].lower()
+        ext = os.path.splitext(inputpath)[-1][1:].lower()
         if ext in usable_extensions:
-            video_files.extend(inputpath)
-
+            video_files.append(inputpath)
 
     return video_files
 
 def srts_from_path(inputpath):
     """Find SRTs for a video or for a directory"""
-    return list([change_extension(vid, 'srt') for vid in videos_from_path(inputpath)])
+    return list([change_extension(vid, 'srt') for vid in videos_from_path(inputpath) if os.path.isfile(vid)])
 
 ### THIS OVERRIDES THE BUILT-IN FROM VIDEOGREP ###
 def get_subtitle_files(inputpaths):

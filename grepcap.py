@@ -6,6 +6,22 @@ import glob
 import re
 from videogrep import *
 
+debug=True
+
+
+def debug(string):
+    if debug:
+        print("[.] {}".format(string))
+
+
+def log(string):
+    print "[+] {}".format(string)
+
+
+def error(string):
+    print "[!] {}".format(string)
+
+
 def change_extension(inputfile, new_ext='srt'):
     dirname, basename = os.path.split(inputfile)
     label, ext = os.path.splitext(basename)
@@ -13,36 +29,46 @@ def change_extension(inputfile, new_ext='srt'):
 
     return os.path.join(dirname, new_base)
 
+
 def videos_from_path(inputpath):
     """Take directory or file path and return list of valid video files"""
     """TODO: Directory recursion! (?)"""
     inputpath = os.path.expanduser(inputpath)
     isdir = os.path.isdir(inputpath)
     video_files = []
+    debug("VIDEOS_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
     if isdir:
         """Check for valid formats within directory"""
         """TODO: Be case-insensitive!"""
         for ext in usable_extensions:
             vids = glob.glob(os.path.join(inputpath, '*.{}'.format(ext)))
+            if len(vids) > 0:
+                debug("Found {} vids: {}".format(len(vids), [os.path.basename(vid) for vid in vids]))
             video_files.extend(vids)
 
     else:
         """Check that file requested is a usable format"""
         ext = os.path.splitext(inputpath)[-1][1:].lower()
+        debug("CHECKING VIDEO FILE WITH EXTENSION: {}".format(ext))
         if ext in usable_extensions:
+            debug("THAT EXTENSION IS GOOD")
             video_files.append(inputpath)
+            debug("VIDEO_FILES is now: {}".format(video_files))
 
     return video_files
+
 
 def srts_from_path(inputpath):
     """Find SRTs for a video or for a directory"""
     return list([change_extension(vid, 'srt') for vid in videos_from_path(inputpath) if os.path.isfile(vid)])
+
 
 ### THIS OVERRIDES THE BUILT-IN FROM VIDEOGREP ###
 def get_subtitle_files(inputpaths):
     """Return a list of subtitle files."""
     srts = []
     for p in inputpaths:
+        debug("GET_SUBTITLE_FILES working on: {}".format(p))
         srts.extend(srts_from_path(p))
 
     if len(srts) == 0:
@@ -50,6 +76,7 @@ def get_subtitle_files(inputpaths):
         return False
 
     return srts
+
 
 def main():
     import argparse
@@ -77,6 +104,7 @@ def main():
     if args.transcribe:
         create_timestamps(args.inputfile)
     else:
+        debug("MAIN() working with: {}".format(args.inputfile))
         print(get_subtitle_files(args.inputfile))
         # videogrep(args.inputfile, args.outputfile, args.search, args.searchtype, args.maxclips, args.padding, args.demo, args.randomize, args.sync, args.use_transcript)
 

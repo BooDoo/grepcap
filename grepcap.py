@@ -11,7 +11,7 @@ from moviepy.video.VideoClip import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
-debug=False
+verbose=False
 font_name='Open-Sans-Semibold'
 
 #################################################################
@@ -23,7 +23,7 @@ font_name='Open-Sans-Semibold'
 #################################################################
 
 def debug(string):
-    if debug:
+    if verbose:
         print("[.] {}".format(string))
 
 
@@ -150,7 +150,7 @@ class PrettyTextClip(TextClip):
             print( " ".join(cmd) )
 
         try:
-            subprocess_call(cmd, verbose=debug)
+            subprocess_call(cmd, verbose=verbose)
         except (IOError,OSError) as err:
             error = ("MoviePy Error: creation of %s failed because "
               "of the following error:\n\n%s.\n\n."%(filename, str(err))
@@ -210,7 +210,7 @@ def sub_generator(txt, **kwargs):
     kwargs.setdefault('font', font_name)
     kwargs.setdefault('shadow', (90, 1, 2, 2)) # Need option to disable this for fast render
     kwargs.setdefault('antialias', 2) # Can be set to False, or to something like 4
-    kwargs.setdefault('print_cmd', debug) # for debugging....
+    # kwargs.setdefault('print_cmd', verbose) # redundant with verbose=verbose in PrettyTextClip.__init__?
 
     txt = clean_line(txt)
     return PrettyTextClip(txt, **kwargs)
@@ -271,7 +271,7 @@ def create_screencaps(composition, out_path=None):
     compositeclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
     mid_frames = [compositeclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
     for i, frame in enumerate(mid_frames):
-        log("Writing {0} of {{1:03d}...")
+        debug("Writing {0} of {{1:03d}...".format(i, len(mid_frames)) )
         imwrite(os.path.join(out_path, "cap_{0:03d}.png".format(i) ), frame)
     #.subclip(c['start'], c['end']) for c in composition]
 
@@ -348,12 +348,14 @@ def main():
     parser.add_argument('--output', '-o', dest='outputfile', default='supercut.mp4', help='name of output file')
     parser.add_argument('--demo', '-d', action='store_true', help='show results without making the supercut')
     parser.add_argument('--randomize', '-r', action='store_true', help='randomize the clips')
+    parser.add_argument('--verbose', '-v', action='store_true', help='verbose/debug output to stdout')
     parser.add_argument('--youtube', '-yt', help='grab clips from youtube based on your search')
     parser.add_argument('--padding', '-p', dest='padding', default=0, type=int, help='padding in milliseconds to add to the start and end of each clip')
     parser.add_argument('--resyncsubs', '-rs', dest='sync', default=0, type=int, help='Subtitle re-synch delay +/- in milliseconds')
     parser.add_argument('--transcribe', '-tr', dest='transcribe', action='store_true', help='Transcribe the video using audiogrep. Requires pocketsphinx')
 
     args = parser.parse_args()
+    verbose = args.verbose
 
     if not args.transcribe:
         if args.search is None:

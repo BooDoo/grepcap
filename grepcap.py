@@ -278,7 +278,7 @@ def create_screencaps(composition, out_path=None):
 
 ### LIFTED WHOLESALE FROM videogrep
 ## TODO: Tailor to actual usecase
-def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, test=False, randomize=False, sync=0, use_transcript=False):
+def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, test=False, randomize=False, sync=0, use_transcript=False, raw=False, verbose=False):
     """Search through and find all instances of the search term in an srt or transcript,
     create a supercut around that instance, and output a new video file
     comprised of those supercuts.
@@ -333,7 +333,6 @@ def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, te
 #(____)\_)__) (__) (__\_)(__/
 #
 #################################################################
-
 ### This is pretty much taken wholesale from videogrep
 ## TODO: Tailor to my actual usecases
 def main():
@@ -364,9 +363,13 @@ def main():
     if args.transcribe:
         create_timestamps(args.inputfile)
     else:
+        ## Create a dict of the args, remove 'transcribe' item
+        dargs = vars(args)
+        dargs.pop('transcribe', None)
+
         debug("MAIN() working with: {}".format(args.inputfile))
         # print(get_subtitle_files(args.inputfile))
-        grepcap(args.inputfile, args.outputfile, args.search, args.searchtype, args.maxclips, args.padding, args.demo, args.randomize, args.sync)
+        grepcap(**dargs)
         # videogrep(args.inputfile, args.outputfile, args.search, args.searchtype, args.maxclips, args.padding, args.demo, args.randomize, args.sync, args.use_transcript)
 
 

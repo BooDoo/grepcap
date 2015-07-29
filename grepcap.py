@@ -210,7 +210,6 @@ def sub_generator(txt, **kwargs):
     kwargs.setdefault('font', font_name)
     kwargs.setdefault('shadow', (90, 1, 2, 2)) # Need option to disable this for fast render
     kwargs.setdefault('antialias', 2) # Can be set to False, or to something like 4
-    # kwargs.setdefault('print_cmd', verbose) # redundant with verbose=verbose in PrettyTextClip.__init__?
 
     txt = clean_line(txt)
     return PrettyTextClip(txt, **kwargs)
@@ -259,17 +258,21 @@ def srts_from_path(inputpath):
     """Find SRTs for a video or for a directory"""
     return list([change_extension(vid, 'srt') for vid in videos_from_path(inputpath) if os.path.isfile(vid)])
 
-def create_screencaps(composition, out_path=None):
+def create_screencaps(composition, out_path=None, raw=False):
     out_path = out_path or os.path.join(os.environ['HOME'], 'grepcap')
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
 
     all_videofiles = set([c['file'] for c in composition])
     # all_subtitlefiles = set([change_extension(c['file']) for c in composition])
-    videofileclips = dict([(f, VideoFileClip(f)) for f in all_videofiles])
-    subtitlefileclips = dict([(f, SubtitlesClip(change_extension(f), sub_generator)) for f in all_videofiles])
-    compositeclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
-    mid_frames = [compositeclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
+
+    if raw:
+        # No need to make subtitle clips for --raw output
+        outputclips = dict([(f, VideoFileClip(f)) for f in all_videofiles])
+    else:
+        # Generate CompositeVideoClip per video file to include subtitles:
+        outputclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
+    mid_frames = [outputclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
     for i, frame in enumerate(mid_frames):
         debug("Writing {0} of {{1:03d}...".format(i, len(mid_frames)) )
         imwrite(os.path.join(out_path, "cap_{0:03d}.png".format(i) ), frame)
@@ -318,7 +321,7 @@ def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, te
         if test:
             demo_supercut(composition, padding)
         else:
-            create_screencaps(composition, outputfile)
+            create_screencaps(composition, outputfile, raw)
 
 
 #################################################################

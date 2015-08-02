@@ -339,6 +339,7 @@ def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, te
 ## TODO: Tailor to my actual usecases
 def main():
     import argparse
+    global verbose
 
     parser = argparse.ArgumentParser(description='Generate a gallery of screencaps of search term being used in subtitle tracks.')
     parser.add_argument('--input', '-i', dest='inputfile', nargs='*', required=True, help='video or subtitle file, or folder')

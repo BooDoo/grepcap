@@ -268,10 +268,13 @@ def create_screencaps(composition, out_path=None, raw=False):
 
     if raw:
         # No need to make subtitle clips for --raw output
+        debug("GENERATING 'outputclips' for raw output (no subs)....")
         outputclips = dict([(f, VideoFileClip(f)) for f in all_videofiles])
     else:
         # Generate CompositeVideoClip per video file to include subtitles:
+        debug("GENERATING 'outputclips' dict for screen cap generation..........")
         outputclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
+    debug("GENERATING 'mid_frames' list of frame image data from outputclips.......")
     mid_frames = [outputclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
     for i, frame in enumerate(mid_frames):
         debug("Writing {0} of {1:03d}...".format(i, len(mid_frames)) )

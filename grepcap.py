@@ -274,7 +274,7 @@ def create_screencaps(composition, out_path=None, raw=False):
         outputclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
     mid_frames = [outputclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
     for i, frame in enumerate(mid_frames):
-        debug("Writing {0} of {{1:03d}...".format(i, len(mid_frames)) )
+        debug("Writing {0} of {1:03d}...".format(i, len(mid_frames)) )
         imwrite(os.path.join(out_path, "cap_{0:03d}.png".format(i) ), frame)
     #.subclip(c['start'], c['end']) for c in composition]
 

@@ -236,12 +236,18 @@ def videos_from_path(inputpath):
     if isdir:
         """Check for valid formats within directory"""
         """TODO: Be case-insensitive!"""
-        for ext in usable_extensions:
-            vids = glob.glob(os.path.join(inputpath, '*.{}'.format(ext)))
+        for root, dirs, files in os.walk(inputpath):
+            print("Checking {}".format(root))
+            vids = glob.glob(os.path.join(root, '*.mkv'))
             if len(vids) > 0:
                 debug("Found {} vids: {}".format(len(vids), [os.path.basename(vid) for vid in vids]))
             video_files.extend(vids)
-
+            ## TODO: Restore suport for muliple extensions?
+            # for ext in usable_extensions:
+            #     vids = glob.glob(os.path.join(root, '*.{}'.format(ext)))
+            #     if len(vids) > 0:
+            #         debug("Found {} vids: {}".format(len(vids), [os.path.basename(vid) for vid in vids]))
+            #     video_files.extend(vids)
     else:
         """Check that file requested is a usable format"""
         ext = os.path.splitext(inputpath)[-1][1:].lower()

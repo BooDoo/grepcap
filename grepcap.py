@@ -315,11 +315,11 @@ def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, te
             c['start'] = c['start'] + sync - padding
             c['end'] = c['end'] + sync + padding
 
-        if maxclips > 0:
-            composition = composition[:maxclips]
-
         if randomize is True:
             random.shuffle(composition)
+
+        if maxclips > 0:
+            composition = composition[:maxclips]
 
         if test:
             demo_supercut(composition, padding)

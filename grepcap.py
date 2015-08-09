@@ -5,6 +5,7 @@ import sys
 import glob
 import re
 from videogrep import *
+from functools import partial
 
 from imageio import imwrite
 from moviepy.video.VideoClip import *
@@ -214,6 +215,37 @@ def sub_generator(txt, **kwargs):
 
     txt = clean_line(txt)
     return PrettyTextClip(txt, **kwargs)
+
+def make_sub_opts(vidclip):
+    """Tailor options in the sub_generator for video clip"""
+    # decoration_factor is 1 for 480p, 2 for 720p, 3 for 1080p
+    # this is used for IM stroke_width and x/y offsets in shadow.
+    w, h = vidclip.size
+    decoration_factor = int(round(h / 480.0))
+
+    # render height leaves a margin below rendered subtitles
+    render_height = int(round(h * 0.965))
+
+    # font_factor 19.0 gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
+    font_factor = 19.0
+
+    sub_opts = {
+        "size": ( w, render_height ),
+        "fontsize": int(round(h / font_factor)),
+        "stroke_width": decoration_factor,
+        "shadow": (90, 1, decoration_factor, decoration_factor),
+    }
+
+    return sub_opts
+
+def compose_subs(vid_file, sub_file):
+    vidclip = VideoFileClip(vid_file)
+    # Scale effects to input video:
+    sub_opts = make_sub_opts(vidclip)
+    generator = partial(sub_generator, **sub_opts)
+
+    txtclip = SubtitlesClip(sub_file, generator)
+    return CompositeVideoClip([vidclip, txtclip])
 
 def get_mid_frame(clip):
     return clip.get_frame(clip.duration * .5)

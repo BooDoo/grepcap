@@ -181,7 +181,7 @@ def get_subtitle_files(inputpaths):
         srts.extend(srts_from_path(p))
 
     if len(srts) == 0:
-        print "[!] No subtitle files were found."
+        error("No subtitle files were found.")
         return False
 
     return srts
@@ -200,6 +200,7 @@ def get_subtitle_files(inputpaths):
 #################################################################
 
 def sub_generator(txt, **kwargs):
+    """ Reasonable defaults for 720p input video """
     kwargs.setdefault('method', 'caption')
     kwargs.setdefault('align', 'south')
     kwargs.setdefault('fontsize', 38)
@@ -221,23 +222,17 @@ def write_mid_frame(clip, outpath):
     imwrite(outpath, get_mid_frame(clip))
     return outpath
 
-def compose_subs(vid_file, sub_file):
-    vidclip = VideoFileClip(vid_file)
-    txtclip = SubtitlesClip(sub_file, sub_generator)
-    return CompositeVideoClip([vidclip, txtclip])
-
 def videos_from_path(inputpath):
-    """Take directory or file path and return list of valid video files"""
-    """TODO: Directory recursion! (?)"""
+    """Take directory or file path and return list of valid video files (*.mkv)"""
     inputpath = os.path.expanduser(inputpath)
     isdir = os.path.isdir(inputpath)
     video_files = []
     debug("VIDEOS_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
     if isdir:
         """Check for valid formats within directory"""
-        """TODO: Be case-insensitive!"""
+        """TODO: Be case-insensitive? Would need to rewrite glob.glob()"""
         for root, dirs, files in os.walk(inputpath):
-            print("Checking {}".format(root))
+            debug("Checking {}".format(root))
             vids = glob.glob(os.path.join(root, '*.mkv'))
             if len(vids) > 0:
                 debug("Found {} vids: {}".format(len(vids), [os.path.basename(vid) for vid in vids]))
@@ -265,6 +260,7 @@ def srts_from_path(inputpath):
     return list([change_extension(vid, 'srt') for vid in videos_from_path(inputpath) if os.path.isfile(vid)])
 
 def create_screencaps(composition, out_path=None, raw=False):
+    # Default output to ~/grepcap
     out_path = out_path or os.path.join(os.environ['HOME'], 'grepcap')
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
@@ -281,12 +277,11 @@ def create_screencaps(composition, out_path=None, raw=False):
         debug("GENERATING 'outputclips' dict for screen cap generation..........")
         outputclips = dict([ (f, compose_subs(f, change_extension(f)) ) for f in all_videofiles ])
     debug("GENERATING 'mid_frames' list of frame image data from outputclips.......")
+
     mid_frames = [outputclips[c['file']].get_frame( (c['start'] + c['end']) / 2) for c in composition]
     for i, frame in enumerate(mid_frames):
         debug("Writing {0} of {1:03d}...".format(i, len(mid_frames)) )
         imwrite(os.path.join(out_path, "cap_{0:03d}.png".format(i) ), frame)
-    #.subclip(c['start'], c['end']) for c in composition]
-
 
 ### LIFTED WHOLESALE FROM videogrep
 ## TODO: Tailor to actual usecase
@@ -310,11 +305,11 @@ def grepcap(inputfile, outputfile, search, searchtype, maxclips=0, padding=0, te
 
     # If the search term was not found in any subtitle file...
     if len(composition) == 0:
-        print "[!] Search term '" + search + "'" + " was not found in any file."
+        error("Search term '" + search + "'" + " was not found in any file.")
         exit(1)
 
     else:
-        print "[+] Search term '" + search + "'" + " was found in " + str(len(composition)) + " places."
+        log("Search term '" + search + "'" + " was found in " + str(len(composition)) + " places.")
 
         # apply padding and sync
         for c in composition:

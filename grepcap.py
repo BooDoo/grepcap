@@ -355,31 +355,29 @@ def main():
     parser.add_argument('--demo', '-d', dest='test', action='store_true', help='show results without making the supercut')
     parser.add_argument('--randomize', '-r', action='store_true', help='randomize the clips')
     parser.add_argument('--verbose', '-v', action='store_true', help='verbose/debug output to stdout')
-    parser.add_argument('--padding', '-p', dest='padding', default=0, type=int, help='padding in milliseconds to add to the start and end of each clip')
+    # parser.add_argument('--padding', '-p', dest='padding', default=0, type=int, help='padding in milliseconds to add to the start and end of each clip')
     parser.add_argument('--no-subs', '--raw', '-ns', action='store_true', dest='raw', help='create output without burning subtitles')
-    parser.add_argument('--resyncsubs', '-rs', dest='sync', default=0, type=int, help='Subtitle re-synch delay +/- in milliseconds')
-    parser.add_argument('--transcribe', '-tr', dest='transcribe', action='store_true', help='Transcribe the video using audiogrep. Requires pocketsphinx')
+    # parser.add_argument('--resyncsubs', '-rs', dest='sync', default=0, type=int, help='Subtitle re-synch delay +/- in milliseconds')
+    # parser.add_argument('--transcribe', '-tr', dest='transcribe', action='store_true', help='Transcribe the video using audiogrep. Requires pocketsphinx')
 
     args = parser.parse_args()
     verbose = args.verbose
 
-    if not args.transcribe:
-        if args.search is None:
-             parser.error('argument --search/-s is required')
+    # if not args.transcribe:
+    if args.search is None:
+        parser.error('argument --search/-s is required')
 
-    if args.transcribe:
-        create_timestamps(args.inputfile)
-    else:
-        ## Create a dict of the args, remove 'transcribe'/'verbose' flags
-        dargs = vars(args)
-        dargs.pop('transcribe', None)
-        dargs.pop('verbose', None)
+    # if args.transcribe:
+    #     create_timestamps(args.inputfile)
+    # else:
+    ## Create dict of args, removing 'transcribe'/'verbose' flags already handled
+    dargs = vars(args)
+    # dargs.pop('transcribe', None)
+    dargs.pop('verbose', None)
 
-        debug("MAIN() working with: {}".format(args.inputfile))
-        # print(get_subtitle_files(args.inputfile))
-        grepcap(**dargs)
-        # videogrep(args.inputfile, args.outputfile, args.search, args.searchtype, args.maxclips, args.padding, args.demo, args.randomize, args.sync, args.use_transcript)
-
+    debug("MAIN() working with: {}".format(args.inputfile))
+    # print(get_subtitle_files(args.inputfile))
+    grepcap(**dargs)
 
 if __name__ == '__main__':
     main()
